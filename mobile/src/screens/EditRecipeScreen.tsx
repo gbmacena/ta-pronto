@@ -1,0 +1,248 @@
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  Alert,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
+import { Feather } from "@expo/vector-icons";
+import api from "../services/api";
+import { useAuth } from "../context/AuthContext";
+import PrimaryButton from "../components/PrimaryButton";
+
+const categorias = ["CAFE", "ALMOCO", "JANTA", "SOBREMESA", "BEBIDA", "LANCHE"];
+
+export default function EditRecipeScreen({ route, navigation }: any) {
+  const { id } = route.params;
+  const { user } = useAuth();
+
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [instructions, setInstructions] = useState("");
+  const [category, setCategory] = useState(categorias[0]);
+  const [ingredients, setIngredients] = useState([{ name: "", quantity: "" }]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    fetchRecipe();
+  }, []);
+
+  async function fetchRecipe() {
+    setLoading(true);
+    try {
+      const res = await api.get(`/recipes/${id}`);
+      setTitle(res.data.title || "");
+      setDescription(res.data.description || "");
+      setInstructions(res.data.instructions || "");
+      setCategory(res.data.category || categorias[0]);
+      setIngredients(
+        res.data.ingredients && res.data.ingredients.length > 0
+          ? res.data.ingredients.map((ing: any) => ({
+              name: ing.name,
+              quantity: ing.quantity,
+            }))
+          : [{ name: "", quantity: "" }]
+      );
+    } catch {
+      Alert.alert("Erro ao carregar receita");
+      navigation.goBack();
+    }
+    setLoading(false);
+  }
+
+  function handleIngredientChange(
+    idx: number,
+    field: "name" | "quantity",
+    value: string
+  ) {
+    const newIngredients = [...ingredients];
+    newIngredients[idx][field] = value;
+    setIngredients(newIngredients);
+  }
+
+  function addIngredient() {
+    setIngredients([...ingredients, { name: "", quantity: "" }]);
+  }
+
+  function removeIngredient(idx: number) {
+    if (ingredients.length === 1) return;
+    setIngredients(ingredients.filter((_, i) => i !== idx));
+  }
+
+  async function handleSave() {
+    if (
+      !title ||
+      !category ||
+      !ingredients[0].name ||
+      !ingredients[0].quantity
+    ) {
+      Alert.alert("Preencha todos os campos obrigatórios!");
+      return;
+    }
+    setSaving(true);
+    try {
+      await api.put(`/recipes/${id}`, {
+        title,
+        description,
+        instructions,
+        category,
+        ingredients,
+      });
+      Alert.alert("Receita atualizada com sucesso!");
+      navigation.goBack();
+    } catch (e: any) {
+      Alert.alert(
+        "Erro ao atualizar receita",
+        e?.response?.data?.message || ""
+      );
+    }
+    setSaving(false);
+  }
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" color="#2563eb" />
+      </View>
+    );
+  }
+
+  return (
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={80}
+    >
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={{ padding: 20 }}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <Text style={styles.label}>Título*</Text>
+        <TextInput
+          style={styles.input}
+          value={title}
+          onChangeText={setTitle}
+          placeholder="Título da receita"
+        />
+
+        <Text style={styles.label}>Descrição</Text>
+        <TextInput
+          style={styles.input}
+          value={description}
+          onChangeText={setDescription}
+          placeholder="Descrição"
+        />
+
+        <Text style={styles.label}>Categoria*</Text>
+        <View style={styles.categoryRow}>
+          {categorias.map((cat) => (
+            <TouchableOpacity
+              key={cat}
+              style={[
+                styles.categoryBtn,
+                category === cat && styles.categoryBtnActive,
+              ]}
+              onPress={() => setCategory(cat)}
+            >
+              <Text
+                style={[
+                  styles.categoryBtnText,
+                  category === cat && styles.categoryBtnTextActive,
+                ]}
+              >
+                {cat}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        <Text style={styles.label}>Ingredientes*</Text>
+        {ingredients.map((ing, idx) => (
+          <View key={idx} style={styles.ingredientRow}>
+            <TextInput
+              style={[styles.input, { flex: 1, marginRight: 8 }]}
+              value={ing.name}
+              onChangeText={(v) => handleIngredientChange(idx, "name", v)}
+              placeholder="Nome"
+            />
+            <TextInput
+              style={[styles.input, { flex: 1, marginRight: 8 }]}
+              value={ing.quantity}
+              onChangeText={(v) => handleIngredientChange(idx, "quantity", v)}
+              placeholder="Quantidade"
+            />
+            <TouchableOpacity onPress={() => removeIngredient(idx)}>
+              <Text style={{ color: "#ef4444", fontSize: 18 }}>🗑️</Text>
+            </TouchableOpacity>
+          </View>
+        ))}
+        <TouchableOpacity onPress={addIngredient} style={styles.addBtn}>
+          <Text style={{ color: "#2563eb", fontWeight: "bold" }}>
+            + Ingrediente
+          </Text>
+        </TouchableOpacity>
+
+        <Text style={styles.label}>Modo de Preparo</Text>
+        <TextInput
+          style={[styles.input, { minHeight: 80, textAlignVertical: "top" }]}
+          value={instructions}
+          onChangeText={setInstructions}
+          placeholder="Descreva o modo de preparo"
+          multiline
+        />
+
+        <PrimaryButton onPress={handleSave} loading={loading}>
+          Salvar
+        </PrimaryButton>
+      </ScrollView>
+    </KeyboardAvoidingView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { backgroundColor: "#fff", flex: 1 },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#2563eb",
+    marginBottom: 18,
+    alignSelf: "center",
+  },
+  label: { fontWeight: "bold", marginTop: 16, marginBottom: 6, fontSize: 15 },
+  input: {
+    backgroundColor: "#f3f4f6",
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    marginBottom: 8,
+  },
+  categoryRow: { flexDirection: "row", flexWrap: "wrap", marginBottom: 8 },
+  categoryBtn: {
+    backgroundColor: "#e0e7ff",
+    borderRadius: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  categoryBtnActive: { backgroundColor: "#2563eb" },
+  categoryBtnText: { color: "#2563eb", fontWeight: "bold" },
+  categoryBtnTextActive: { color: "#fff" },
+  ingredientRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  addBtn: { marginBottom: 12 },
+});

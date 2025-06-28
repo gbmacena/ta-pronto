@@ -21,12 +21,13 @@ model User {
 model Recipe {
   id            String         @id @default(uuid())
   title         String
-  description   String         
+  description   String?
+  instructions  String?
   category      Category
   createdBy     User           @relation("UserRecipes", fields: [createdById], references: [id])
   createdById   String
   ingredients   Ingredient[]   @relation("RecipeIngredients")
-  favorites     Favorite[]     
+  favorites     Favorite[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 }
@@ -35,15 +36,15 @@ model Ingredient {
   id         String   @id @default(uuid())
   name       String
   quantity   String      
-  recipe     Recipe   @relation("RecipeIngredients", fields: [recipeId], references: [id])
+  recipe     Recipe   @relation("RecipeIngredients", fields: [recipeId], references: [id], onDelete: Cascade)
   recipeId   String
 }
 
 model Favorite {
   id        String   @id @default(uuid())
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
-  recipe    Recipe   @relation(fields: [recipeId], references: [id])
+  recipe    Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   recipeId  String
 
   @@unique([userId, recipeId]) 
@@ -55,4 +56,5 @@ enum Category {
   JANTA
   SOBREMESA
   BEBIDA
+  LANCHE
 }

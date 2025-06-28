@@ -8,7 +8,15 @@ export const CreateIngredientSchema = z.object({
 export const CreateRecipeSchema = z.object({
   title: z.string(),
   description: z.string(),
-  category: z.enum(['CAFE', 'ALMOCO', 'JANTA', 'SOBREMESA', 'BEBIDA']),
+  instructions: z.string(),
+  category: z.enum([
+    'CAFE',
+    'ALMOCO',
+    'JANTA',
+    'SOBREMESA',
+    'BEBIDA',
+    'LANCHE',
+  ]),
   createdById: z.string(),
   ingredients: z.array(CreateIngredientSchema),
 });
@@ -17,8 +25,9 @@ export type CreateRecipeDto = z.infer<typeof CreateRecipeSchema>;
 export const UpdateRecipeSchema = z.object({
   title: z.string().optional(),
   description: z.string().optional(),
+  instructions: z.string().optional(),
   category: z
-    .enum(['CAFE', 'ALMOCO', 'JANTA', 'SOBREMESA', 'BEBIDA'])
+    .enum(['CAFE', 'ALMOCO', 'JANTA', 'SOBREMESA', 'BEBIDA', 'LANCHE'])
     .optional(),
   ingredients: z.array(CreateIngredientSchema).optional(),
 });
