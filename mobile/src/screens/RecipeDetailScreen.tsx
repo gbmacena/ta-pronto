@@ -14,31 +14,35 @@ import { Feather } from "@expo/vector-icons";
 import { FontAwesome } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
 import { Alert } from "react-native";
+import { useRecipesStore } from "../store/recipesStore";
 
 export default function RecipeDetailScreen({
   route,
 }: StackScreenProps<"DetalheReceita">) {
   const { id } = route.params;
-  const [recipe, setRecipe] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const userId = user?.id;
 
-  useEffect(() => {
-    fetchRecipe();
-  }, []);
+  const { recipes, fetchRecipes, updateRecipe } = useRecipesStore();
+  const [loading, setLoading] = useState(true);
+  const [recipe, setRecipe] = useState<any>(null);
 
-  useFocusEffect(
-    React.useCallback(() => {
+  useEffect(() => {
+    const found = recipes.find((r) => r.id === id);
+    if (found) {
+      setRecipe(found);
+      setLoading(false);
+    } else {
       fetchRecipe();
-    }, [userId])
-  );
+    }
+  }, [id, recipes]);
 
   async function fetchRecipe() {
     setLoading(true);
     try {
       const res = await api.get(`/recipes/${id}`, { params: { userId } });
       setRecipe(res.data);
+      updateRecipe(res.data);
     } catch (e) {
       setRecipe(null);
     }
@@ -51,14 +55,17 @@ export default function RecipeDetailScreen({
       return;
     }
     try {
+      let updatedRecipe;
       if (userLiked) {
         await api.delete(`/recipes/${recipeId}/favorite`, { data: { userId } });
+        updatedRecipe = { ...recipe, userLiked: false };
       } else {
         await api.post(`/recipes/${recipeId}/favorite`, { userId });
+        updatedRecipe = { ...recipe, userLiked: true };
       }
-      fetchRecipe();
+      setRecipe(updatedRecipe);
+      updateRecipe(updatedRecipe);
     } catch (e) {
-      console.error("Erro ao atualizar favorito:", e);
       Alert.alert("Erro", "Erro ao atualizar favorito. Tente novamente.");
     }
   }

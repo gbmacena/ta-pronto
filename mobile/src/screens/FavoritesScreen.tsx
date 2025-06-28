@@ -103,15 +103,3 @@ export default function FavoritesScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  search: {
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    marginBottom: 16,
-  },
-});

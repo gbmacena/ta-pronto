@@ -8,64 +8,47 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
-import api from "../services/api";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../types/navigation";
 import { useAuth } from "../context/AuthContext";
 import RecipeCard from "../components/RecipeCard";
 import SearchInput from "../components/SearchInput";
+import { useRecipesStore } from "../store/recipesStore";
+import type { Recipe } from "../store/recipesStore";
 
 export default function RecipesScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [recipes, setRecipes] = useState([]);
-  const [filtered, setFiltered] = useState([]);
-  const [search, setSearch] = useState("");
-  const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const userId = user?.id;
 
+  const { recipes, loading, fetchRecipes } = useRecipesStore();
+  const [search, setSearch] = useState("");
+  const [filtered, setFiltered] = useState<Recipe[]>([]);
+
   useEffect(() => {
-    fetchRecipes();
-  }, []);
+    fetchRecipes(userId);
+  }, [userId]);
 
-  useFocusEffect(
-    React.useCallback(() => {
-      fetchRecipes();
-    }, [userId])
-  );
-
-  async function fetchRecipes() {
-    setLoading(true);
-    try {
-      const res = await api.get("/recipes", { params: { userId } });
-      setRecipes(res.data);
-      setFiltered(res.data);
-    } catch (e) {
-      setRecipes([]);
-      setFiltered([]);
-    }
-    setLoading(false);
-  }
+  useEffect(() => {
+    setFiltered(
+      !search
+        ? recipes
+        : recipes.filter(
+            (r) =>
+              r.title.toLowerCase().includes(search.toLowerCase()) ||
+              (r.category &&
+                r.category.toLowerCase().includes(search.toLowerCase()))
+          )
+    );
+  }, [search, recipes]);
 
   function handleSearch(text: string) {
     setSearch(text);
-    if (!text) {
-      setFiltered(recipes);
-      return;
-    }
-    const lower = text.toLowerCase();
-    setFiltered(
-      recipes.filter(
-        (r: any) =>
-          r.title.toLowerCase().includes(lower) ||
-          (r.category && r.category.toLowerCase().includes(lower))
-      )
-    );
   }
 
-  function renderRecipe({ item }: { item: any }) {
+  function renderRecipe({ item }: { item: Recipe }) {
     return (
       <RecipeCard
         recipe={item}
