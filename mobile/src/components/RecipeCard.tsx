@@ -56,5 +56,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "#444",
     maxWidth: "100%",
+    overflow: "hidden",
   },
 });
