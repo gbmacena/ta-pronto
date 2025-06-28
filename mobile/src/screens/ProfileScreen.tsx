@@ -58,7 +58,7 @@ export default function ProfileScreen({ navigation }: any) {
               await api.delete(`/recipes/${recipeId}`);
               fetchMyRecipes();
             } catch {
-              Alert.alert("Erro ao remover receita");
+              Alert.alert("Erro", "Erro ao remover receita");
             }
           },
         },
@@ -147,7 +147,7 @@ export default function ProfileScreen({ navigation }: any) {
           )}
           contentContainerStyle={{ paddingBottom: 24 }}
           showsVerticalScrollIndicator={false}
-          style={{ width: "100%" }} // <-- Adicione esta linha
+          style={{ width: "100%" }}
         />
       )}
     </View>

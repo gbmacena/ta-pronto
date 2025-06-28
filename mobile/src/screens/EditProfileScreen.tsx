@@ -27,7 +27,7 @@ export default function EditProfileScreen({ navigation }: any) {
     try {
       const res = await api.put(`/users/${user.id}`, { name, email });
       setUser({ ...user, name, email });
-      Alert.alert("Perfil atualizado com sucesso!");
+      Alert.alert("Sucesso", "Perfil atualizado com sucesso!");
       navigation.goBack();
     } catch (e: any) {
       setError(e?.response?.data?.message || "Erro ao atualizar perfil");

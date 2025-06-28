@@ -11,7 +11,6 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { Feather } from "@expo/vector-icons";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import PrimaryButton from "../components/PrimaryButton";
@@ -51,7 +50,7 @@ export default function EditRecipeScreen({ route, navigation }: any) {
           : [{ name: "", quantity: "" }]
       );
     } catch {
-      Alert.alert("Erro ao carregar receita");
+      Alert.alert("Erro", "Erro ao carregar receita");
       navigation.goBack();
     }
     setLoading(false);
@@ -83,7 +82,7 @@ export default function EditRecipeScreen({ route, navigation }: any) {
       !ingredients[0].name ||
       !ingredients[0].quantity
     ) {
-      Alert.alert("Preencha todos os campos obrigatórios!");
+      Alert.alert("Erro", "Preencha todos os campos obrigatórios!");
       return;
     }
     setSaving(true);
@@ -95,10 +94,11 @@ export default function EditRecipeScreen({ route, navigation }: any) {
         category,
         ingredients,
       });
-      Alert.alert("Receita atualizada com sucesso!");
+      Alert.alert("Sucesso", "Receita atualizada com sucesso!");
       navigation.goBack();
     } catch (e: any) {
       Alert.alert(
+        "Erro",
         "Erro ao atualizar receita",
         e?.response?.data?.message || ""
       );

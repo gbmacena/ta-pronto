@@ -51,7 +51,7 @@ export default function CreateRecipeScreen({ navigation }: any) {
       !ingredients[0].name ||
       !ingredients[0].quantity
     ) {
-      Alert.alert("Preencha todos os campos obrigatórios!");
+      Alert.alert("Erro", "Preencha todos os campos obrigatórios!");
       return;
     }
     setLoading(true);
@@ -69,10 +69,14 @@ export default function CreateRecipeScreen({ navigation }: any) {
       setInstructions("");
       setCategory(categorias[0]);
       setIngredients([{ name: "", quantity: "" }]);
-      Alert.alert("Receita criada com sucesso!");
+      Alert.alert("Sucesso", "Receita criada com sucesso!");
       navigation.goBack();
     } catch (e: any) {
-      Alert.alert("Erro ao criar receita", e?.response?.data?.message || "");
+      Alert.alert(
+        "Erro",
+        "Erro ao criar receita",
+        e?.response?.data?.message || ""
+      );
     }
     setLoading(false);
   }

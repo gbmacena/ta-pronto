@@ -13,6 +13,7 @@ import type { StackScreenProps } from "../types/navigation";
 import { Feather } from "@expo/vector-icons";
 import { FontAwesome } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
+import { Alert } from "react-native";
 
 export default function RecipeDetailScreen({
   route,
@@ -46,7 +47,7 @@ export default function RecipeDetailScreen({
 
   async function handleToggleFavorite(recipeId: string, userLiked: boolean) {
     if (!userId) {
-      alert("Usuário não identificado.");
+      Alert.alert("Erro", "Usuário não identificado.");
       return;
     }
     try {
@@ -58,7 +59,7 @@ export default function RecipeDetailScreen({
       fetchRecipe();
     } catch (e) {
       console.error("Erro ao atualizar favorito:", e);
-      alert("Erro ao atualizar favorito. Tente novamente.");
+      Alert.alert("Erro", "Erro ao atualizar favorito. Tente novamente.");
     }
   }
 

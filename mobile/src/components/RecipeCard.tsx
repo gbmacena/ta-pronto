@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 2 },
     elevation: 2,
-    width: "100%", // garante largura total
+    width: "100%",
   },
   title: {
     fontSize: 18,
